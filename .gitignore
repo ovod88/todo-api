@@ -1,0 +1,9 @@
+*.psd
+tests/*
+/nodejs/**/node_modules/
+**/**/sprite-dist/*
+bower_components/**
+bash.exe.*
+*.iml
+.idea/*
+node_modules/**
