@@ -55,8 +55,35 @@ app.delete('/todos/:id', function(req, resp){
         todos = _.without(todos, matchedTodo);
         resp.json(matchedTodo);
     } else {
-        resp.status(404).send('Nothing to delete!');
+        return resp.status(404).send('Nothing to delete!');
     }
+});
+
+app.put('/todos/:id', function (req, resp) {
+    var body = _.pick(req.body, 'completed', 'description');
+    var validAttributes = {};
+    var id = parseInt(req.params.id);
+    var matchedTodo = _.findWhere(todos, {id: id});
+
+    if(!matchedTodo) {
+        resp.status(404).send('Nothing to update!');
+    }
+
+    if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+        validAttributes.completed = body.completed;
+    } else if(body.hasOwnProperty('completed')) {
+        return resp.status(400).send();
+    }
+
+    if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+        body.description = body.description.trim();
+        validAttributes.description = body.description;
+    } else if(body.hasOwnProperty('description')) {
+        return resp.status(400).send();
+    }
+
+    _.extend(matchedTodo, validAttributes);
+    resp.send('OK');
 });
 
 app.post('/todos', function (req, resp) {
