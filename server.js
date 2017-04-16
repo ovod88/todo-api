@@ -26,7 +26,16 @@ app.get('/', function(req, resp) {
 });
 
 app.get('/todos', function (req, resp) {
-   resp.json(todos);
+    var queryParams = req.query;
+    var filteredTodos = todos;
+
+    if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+        filteredTodos = _.where(filteredTodos, { completed: true});
+    } else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+        filteredTodos = _.where(filteredTodos, { completed: false});
+    }
+
+   resp.json(filteredTodos);
 });
 
 app.get('/todos/:id', function (req, resp) {
@@ -66,7 +75,7 @@ app.put('/todos/:id', function (req, resp) {
     var matchedTodo = _.findWhere(todos, {id: id});
 
     if(!matchedTodo) {
-        resp.status(404).send('Nothing to update!');
+        return resp.status(404).send('Nothing to update!');
     }
 
     if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
@@ -83,7 +92,7 @@ app.put('/todos/:id', function (req, resp) {
     }
 
     _.extend(matchedTodo, validAttributes);
-    resp.send('OK');
+    resp.json(matchedTodo);
 });
 
 app.post('/todos', function (req, resp) {
