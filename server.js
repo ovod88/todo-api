@@ -2,6 +2,9 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var _ = require('underscore');
+var db = require('./db');
+
+
 var PORT = process.env.PORT || 3000;
 //var todos = [{
 //        id:1,
@@ -103,18 +106,32 @@ app.put('/todos/:id', function (req, resp) {
 
 app.post('/todos', function (req, resp) {
     var body = _.pick(req.body, 'completed', 'description');
-    body.description = body.description.trim();
-
-    if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.length === 0) {
-        return resp.status(400).send();
+    if(typeof body.description === 'string') {
+        body.description = body.description.trim();
     }
 
-    body.id = todoNextId++;
-    todos.push(body);
 
-    resp.json(body)
+    db.todo.create(body).then(
+        function(todo) {
+            resp.json(todo.toJSON());
+        },function(e) {
+            resp.status(400).json(e);
+        }
+    );
+    //
+    //
+    //if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.length === 0) {
+    //    return resp.status(400).send();
+    //}
+    //
+    //body.id = todoNextId++;
+    //todos.push(body);
+    //
+    //resp.json(body)
 });
 
-app.listen(PORT, function() {
-    console.log('Server launched on port ' + PORT + '!');
+db.sequelize.sync().then(function () {
+    app.listen(PORT, function() {
+        console.log('Server launched on port ' + PORT + '!');
+    });
 });
