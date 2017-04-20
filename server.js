@@ -49,8 +49,21 @@ app.get('/todos', function (req, resp) {
 
 app.get('/todos/:id', function (req, resp) {
     var id = parseInt(req.params.id);
+
+    db.todo.findById(id).then(
+          function(todo) {
+              if(!!todo) {
+                  resp.json(todo);
+              } else {
+                  resp.status(404).send();
+              }
+          },
+          function() {
+                resp.status(500).send();
+          }
+    );
     //var matchedTodo;
-    var matchedTodo = _.findWhere(todos, {id: id});
+    //var matchedTodo = _.findWhere(todos, {id: id});
 
     //todos.forEach(function(todo){
     //    if(todo.id === id) {
@@ -58,11 +71,11 @@ app.get('/todos/:id', function (req, resp) {
     //    }
     //});
 
-    if(matchedTodo) {
-        resp.json(matchedTodo);
-    } else {
-        resp.status(404).send('No entry with such id!');
-    }
+    //if(matchedTodo) {
+    //    resp.json(matchedTodo);
+    //} else {
+    //    resp.status(404).send('No entry with such id!');
+    //}
 });
 
 app.delete('/todos/:id', function(req, resp){
