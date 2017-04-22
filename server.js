@@ -195,6 +195,25 @@ app.post('/todos', function (req, resp) {
     //resp.json(body)
 });
 
+app.post('/users', function (req, resp) {
+    var body = _.pick(req.body, 'email', 'password');
+    if(typeof body.email === 'string') {
+        body.email = body.email.trim();
+    }
+
+    if(typeof body.password === 'string') {
+        body.password = body.password.trim();
+    }
+
+    db.user.create(body).then(
+        function(user) {
+            resp.json(user);
+        },function(e) {
+            resp.status(400).json(e);
+        }
+    );
+});
+
 db.sequelize.sync().then(function () {
     app.listen(PORT, function() {
         console.log('Server launched on port ' + PORT + '!');
