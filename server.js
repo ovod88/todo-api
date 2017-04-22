@@ -104,14 +104,36 @@ app.get('/todos/:id', function (req, resp) {
 
 app.delete('/todos/:id', function(req, resp){
     var id = parseInt(req.params.id);
-    var matchedTodo = _.findWhere(todos, {id: id});
 
-    if(matchedTodo) {
-        todos = _.without(todos, matchedTodo);
-        resp.json(matchedTodo);
-    } else {
-        return resp.status(404).send('Nothing to delete!');
-    }
+    db.todo.destroy({
+        where: {
+            id: id
+        }
+    }).then(
+      function(rows) {
+          if(rows > 0) {
+              resp.status(204).send('Deleted successfully');
+          } else {
+              resp.status(404).json({
+                  error: 'Nothing to delete...'
+              });
+          }
+      },  function(e) {
+            resp.status(500).json(e);
+      }
+    ).catch(
+        function(e) {
+            resp.status(500).json(e);
+        }
+    );
+    //var matchedTodo = _.findWhere(todos, {id: id});
+    //
+    //if(matchedTodo) {
+    //    todos = _.without(todos, matchedTodo);
+    //    resp.json(matchedTodo);
+    //} else {
+    //    return resp.status(404).send('Nothing to delete!');
+    //}
 });
 
 app.put('/todos/:id', function (req, resp) {
