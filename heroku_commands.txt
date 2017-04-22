@@ -1,0 +1,6 @@
+heroku login - logins local PC to remote server
+heroku create - creates apps on remote server
+heroku open --apps [app_name] - opens browser with your application
+heroku apps:destroy --app [app_name]
+heroku apps:rename [newname] --app [oldname]
+heroku addons:create heroku-postgresql:hobby-dev - will add free Postgresql DB

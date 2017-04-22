@@ -30,21 +30,45 @@ app.get('/', function(req, resp) {
 
 app.get('/todos', function (req, resp) {
     var queryParams = req.query;
-    var filteredTodos = todos;
+    var where = {};
 
-    if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-        filteredTodos = _.where(filteredTodos, { completed: true});
-    } else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-        filteredTodos = _.where(filteredTodos, { completed: false});
+    if(queryParams.hasOwnProperty('completed') && (queryParams.completed === 'true' || queryParams.completed === 'false')) {
+        where.completed = (queryParams.completed === 'true');
+    } else if(queryParams.hasOwnProperty('completed')) {
+        return resp.status(400).send();
+    }
+    if(queryParams.hasOwnProperty('q')) {
+        where.description = { $like: '%' + queryParams.q + '%'};
     }
 
-    if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-        filteredTodos = _.filter(filteredTodos, function(todo) {
-            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-        })
-    }
+    db.todo.findAll({
+        where: where
+    }).then(function(todos) {
+        if(todos.length !== 0) {
+            resp.json(todos);
+        } else {
+            resp.status(404).send();
+        }
+    }, function(e) {
+        resp.status(500).json(e);
+    });
 
-   resp.json(filteredTodos);
+
+   // var filteredTodos = todos;
+   //
+   // if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+   //     filteredTodos = _.where(filteredTodos, { completed: true});
+   // } else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+   //     filteredTodos = _.where(filteredTodos, { completed: false});
+   // }
+   //
+   // if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+   //     filteredTodos = _.filter(filteredTodos, function(todo) {
+   //         return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+   //     })
+   // }
+   //
+   //resp.json(filteredTodos);
 });
 
 app.get('/todos/:id', function (req, resp) {
