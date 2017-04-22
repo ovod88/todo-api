@@ -138,29 +138,35 @@ app.delete('/todos/:id', function(req, resp){
 
 app.put('/todos/:id', function (req, resp) {
     var body = _.pick(req.body, 'completed', 'description');
-    var validAttributes = {};
+    var attributes = {};
     var id = parseInt(req.params.id);
-    var matchedTodo = _.findWhere(todos, {id: id});
 
-    if(!matchedTodo) {
-        return resp.status(404).send('Nothing to update!');
+    if(body.hasOwnProperty('completed')) {
+        attributes.completed = body.completed;
     }
 
-    if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed;
-    } else if(body.hasOwnProperty('completed')) {
-        return resp.status(400).send();
-    }
-
-    if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+    if(body.hasOwnProperty('description') && typeof body.description === 'string') {
         body.description = body.description.trim();
-        validAttributes.description = body.description;
-    } else if(body.hasOwnProperty('description')) {
-        return resp.status(400).send();
+        attributes.description = body.description;
     }
 
-    _.extend(matchedTodo, validAttributes);
-    resp.json(matchedTodo);
+    db.todo.findById(id).then(
+        function(todo) {
+            if(todo) {
+                todo.update(attributes).then(function(todo) {
+                    resp.json(todo);
+                }, function(e) {
+                    resp.status(400).json(e);
+                });
+            } else {
+                resp.status(404).send();
+            }
+        }, function() {
+            resp.status(500).send();
+        }
+    ).catch(function(e) {
+        resp.status(500).json(e);
+    });
 });
 
 app.post('/todos', function (req, resp) {
