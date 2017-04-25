@@ -219,7 +219,13 @@ app.post('/users/login', function(req, resp) {
     var body = _.pick(req.body, 'email', 'password');
 
     db.user.authenticate(body).then(function(user) {
-        resp.json(user.toPublicJSON());
+        var token = user.generateToken('authentication');
+        
+        if(token) {
+            resp.header('Auth', token).json(user.toPublicJSON());
+        } else {
+            resp.status(401).send();
+        }
     }, function() {
         resp.status(401).send();
     });
