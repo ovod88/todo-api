@@ -19,41 +19,75 @@ var Todo = sequelize.define('todo', {
    }
 });
 
+var User = sequelize.define('user', {
+   email: {
+       type: Sequelize.STRING
+   }
+});
+
+Todo.belongsTo(User);
+User.hasMany(Todo);
+
 sequelize.sync({
-    force: true
+    //force: true
 }).then(function () {
-    Todo.create({
-        description: 'Wake up',
-        completed: true
-    }).then(function(todo) {
-        return Todo.create({
-            description: 'Take out the trash'
-        })
-    }).then(function () {
-        //return Todo.findById(1);
-        return Todo.findAll({
+    User.findById(1).then(function(user) {
+        user.getTodos({
             where: {
-                completed: false,
-                description: {
-                    $like: '%Wake%'
-                }
+                completed: false
             }
+        }).then(function(todos) {
+            todos.forEach(function(todo) {
+                console.log(todo.toJSON());
+            })
         })
-    }).then(function(todos) {
-        //if(todo) {
-        //    console.log(todo.toJSON());
-        //} else {
-        //    console.log('No todo found');
-        //}
-            if(todos) {
-                todos.forEach(function (todo) {
-                    console.log(todo.toJSON());
-                });
-            } else {
-                console.log('No todo found');
-            }
-    })
-    .catch(function(e) {
-        console.log(e);
     });
+    //User.create({
+    //   email: 'test@example.com'
+    //}).then(function() {
+    //    return Todo.create({
+    //        description: "Clean yard",
+    //        completed: false
+    //    })
+    //}).then(function(todo) {
+    //    User.findById(1).then(function(user) {
+    //        user.addTodo(todo);
+    //    })
+    //});
+
+
+    //Todo.create({
+    //    description: 'Wake up',
+    //    completed: true
+    //}).then(function(todo) {
+    //    return Todo.create({
+    //        description: 'Take out the trash'
+    //    })
+    //}).then(function () {
+    //    //return Todo.findById(1);
+    //    return Todo.findAll({
+    //        where: {
+    //            completed: false,
+    //            description: {
+    //                $like: '%Wake%'
+    //            }
+    //        }
+    //    })
+    //}).then(function(todos) {
+    //    //if(todo) {
+    //    //    console.log(todo.toJSON());
+    //    //} else {
+    //    //    console.log('No todo found');
+    //    //}
+    //        if(todos) {
+    //            todos.forEach(function (todo) {
+    //                console.log(todo.toJSON());
+    //            });
+    //        } else {
+    //            console.log('No todo found');
+    //        }
+    //})
+    //.catch(function(e) {
+    //    console.log(e);
+    //});
 });
