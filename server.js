@@ -42,6 +42,7 @@ app.get('/todos', middleware.requireAuthentication, function (req, resp) {
     if(queryParams.hasOwnProperty('q')) {
         where.description = { $like: '%' + queryParams.q + '%'};
     }
+    where.userId = req.user.get('id');
 
     db.todo.findAll({
         where: where
@@ -76,7 +77,12 @@ app.get('/todos', middleware.requireAuthentication, function (req, resp) {
 app.get('/todos/:id', middleware.requireAuthentication, function (req, resp) {
     var id = parseInt(req.params.id);
 
-    db.todo.findById(id).then(
+    db.todo.findOne({
+        where: {
+            userId: req.user.get('id'),
+            id: id
+        }
+    }).then(
           function(todo) {
               if(!!todo) {
                   resp.json(todo);
@@ -109,7 +115,8 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, resp){
 
     db.todo.destroy({
         where: {
-            id: id
+            id: id,
+            userId: req.user.get('id')
         }
     }).then(
       function(rows) {
@@ -152,7 +159,12 @@ app.put('/todos/:id', middleware.requireAuthentication, function (req, resp) {
         attributes.description = body.description;
     }
 
-    db.todo.findById(id).then(
+    db.todo.findOne({
+        where: {
+            id: id,
+            userId: req.user.get('id')
+        }
+    }).then(
         function(todo) {
             if(todo) {
                 todo.update(attributes).then(function(todo) {
